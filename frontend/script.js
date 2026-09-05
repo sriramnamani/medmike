@@ -140,7 +140,12 @@ async function initPatientForm() {
                     body: JSON.stringify(patientData)
                 });
                 
-                const result = await response.json();
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (jsonErr) {
+                    result = null;
+                }
                 
                 if (response.ok) {
                     alert('Patient created successfully!');
@@ -148,11 +153,19 @@ async function initPatientForm() {
                     loadPatients(); // Reload patients list
                     loadDashboardData(); // Update dashboard
                 } else {
-                    alert('Error: ' + result.error);
+                    let errMsg = result && result.error ? result.error : null;
+                    if (!errMsg) {
+                        if (response.status === 404) {
+                            errMsg = 'Backend API endpoint not found (404). If you are viewing on Vercel, the backend server is not running there. Run "npm start" locally and open http://localhost:3000';
+                        } else {
+                            errMsg = `Server error (${response.status})`;
+                        }
+                    }
+                    alert('Error: ' + errMsg);
                 }
             } catch (error) {
                 console.error('Error creating patient:', error);
-                alert('Failed to create patient. Please try again.');
+                alert('Failed to connect to backend server.\n\nMake sure the local server is running by executing "npm start" in your terminal, then open http://localhost:3000');
             }
         });
     }
