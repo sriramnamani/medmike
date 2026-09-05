@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMike - AI Medical Record Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1><i class="fas fa-heartbeat"></i> MediMike</h1>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-page="patients"><i class="fas fa-users"></i> Patients</a></li>
+                <li><a href="#" class="nav-link" data-page="reports"><i class="fas fa-file-medical"></i> Reports</a></li>
+                <li><a href="#" class="nav-link" data-page="about"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+        <main id="dashboard" class="page active">
+            <header class="page-header header-with-action">
+                <div>
+                    <h2>Dashboard</h2>
+                    <p>Overview of patient records and reports</p>
+                </div>
+                <div class="page-header-actions">
+                    <button id="exportDashboardCsvBtn" class="btn btn-secondary btn-sm" onclick="exportDashboardAnalyticsCSV()" title="Export dashboard records to CSV">
+                        <i class="fas fa-file-csv"></i> Export Analytics CSV
+                    </button>
+                </div>
+            </header>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Patients</h3>
+                        <p class="stat-number" id="totalPatients">0</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-medical-alt"></i></div>
+                    <div class="stat-info">
+                        <h3>Total Reports</h3>
+                        <p class="stat-number" id="totalReports">0</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h3>Processed Reports</h3>
+                        <p class="stat-number" id="processedReports">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recent-section">
+                <h3>Recent Reports</h3>
+                <div class="recent-reports" id="recentReports">
+                    <div class="empty-state">
+                        <i class="fas fa-file-medical"></i>
+                        <p>No recent reports available</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Patients Page -->
+        <main id="patients" class="page">
+            <header class="page-header">
+                <h2>Patients</h2>
+                <p>Manage patient information</p>
+            </header>
+            
+            <div class="patients-container">
+                <div class="patient-form-section">
+                    <h3>Add New Patient</h3>
+                    <form id="patientForm" class="patient-form">
+                        <div class="form-group">
+                            <label for="patientName"><i class="fas fa-user"></i> Full Name *</label>
+                            <input type="text" id="patientName" name="name" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientAge"><i class="fas fa-birthday-cake"></i> Age *</label>
+                                <input type="number" id="patientAge" name="age" required min="0" max="150">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="patientGender"><i class="fas fa-venus-mars"></i> Gender *</label>
+                                <select id="patientGender" name="gender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="patientPhone"><i class="fas fa-phone"></i> Contact Number</label>
+                            <input type="tel" id="patientPhone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="medicalHistory"><i class="fas fa-history"></i> Medical History</label>
+                            <textarea id="medicalHistory" name="medicalHistory" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="conditions"><i class="fas fa-notes-medical"></i> Existing Conditions</label>
+                            <textarea id="conditions" name="conditions" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="allergies"><i class="fas fa-allergies"></i> Allergies</label>
+                            <textarea id="allergies" name="allergies" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="medications"><i class="fas fa-pills"></i> Current Medications</label>
+                            <textarea id="medications" name="medications" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="symptoms"><i class="fas fa-stethoscope"></i> Symptoms</label>
+                            <textarea id="symptoms" name="symptoms" rows="2"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Patient</button>
+                    </form>
+                </div>
+                
+                <div class="patients-list-section">
+                    <h3>Patient List</h3>
+                    <div class="patients-list" id="patientsList">
+                        <div class="empty-state">
+                            <i class="fas fa-user-plus"></i>
+                            <p>No patients registered yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Reports Page -->
+        <main id="reports" class="page">
+            <header class="page-header">
+                <h2>Medical Reports</h2>
+                <p>Upload and process medical reports</p>
+            </header>
+            
+            <div class="reports-container">
+                <div class="upload-section">
+                    <h3>Upload Medical Report</h3>
+                    <form id="reportForm" class="report-form">
+                        <div class="form-group">
+                            <label for="patientSelect"><i class="fas fa-user-injured"></i> Select Patient *</label>
+                            <select id="patientSelect" name="patientId" required>
+                                <option value="">Select a patient</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reportFile"><i class="fas fa-cloud-upload-alt"></i> Upload Report *</label>
+                            <div class="file-upload">
+                                <input type="file" id="reportFile" name="file" accept=".pdf,.jpg,.jpeg,.png" required>
+                                <div class="file-info" id="fileInfo">
+                                    <p><i class="fas fa-file-upload"></i> No file selected</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="file-details" id="fileDetails" style="display: none;">
+                            <p><strong><i class="fas fa-file"></i> File:</strong> <span id="fileName"></span></p>
+                            <p><strong><i class="fas fa-file-code"></i> Type:</strong> <span id="fileType"></span></p>
+                            <p><strong><i class="fas fa-weight"></i> Size:</strong> <span id="fileSize"></span></p>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="uploadBtn"><i class="fas fa-upload"></i> Upload Report</button>
+                    </form>
+                    
+                    <div class="upload-status" id="uploadStatus" style="display: none;">
+                        <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
+                        <p>Uploading report...</p>
+                    </div>
+                </div>
+                
+                <div class="reports-list-section">
+                    <h3>Reports List</h3>
+                    <div class="reports-list" id="reportsList">
+                        <div class="empty-state">
+                            <i class="fas fa-file-upload"></i>
+                            <p>No reports uploaded yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- About Page -->
+        <main id="about" class="page">
+            <header class="page-header">
+                <h2>About MediMike</h2>
+                <p>Intelligent AI Medical Record Management & Analysis System</p>
+            </header>
+            
+            <div class="about-content">
+                <div class="about-section">
+                    <h3>What is MediMike?</h3>
+                    <p>MediMike is an intelligent medical record management system that uses artificial intelligence to digitize, organize, and analyze medical reports, translating complex clinical jargon into accessible, structured records and summaries for healthcare professionals and patients.</p>
+                </div>
+                
+                <div class="about-section">
+                    <h3>Features</h3>
+                    <ul>
+                        <li>Patient demographic & clinical profile management</li>
+                        <li>Medical report upload (PDF documents & image scans)</li>
+                        <li>Automated OCR and text extraction engine</li>
+                        <li>AI-powered clinical information extraction (vitals, lab metrics, diagnoses, prescriptions)</li>
+                        <li>Plain-language, patient-friendly AI summaries</li>
+                        <li>Side-by-side verification with original reports</li>
+                        <li>Secure SQLite database persistence</li>
+                    </ul>
+                </div>
+                
+                <div class="about-section">
+                    <h3>Medical Safety Disclaimer</h3>
+                    <div class="disclaimer">
+                        <p><strong>IMPORTANT:</strong> This application is designed for information processing and record organization only.</p>
+                        <ul>
+                            <li>AI-generated information is provided for record organization and informational purposes only</li>
+                            <li>It does NOT replace professional medical advice, diagnosis, or treatment</li>
+                            <li>All extracted information should be verified against the original report</li>
+                            <li>MediMike AI does NOT diagnose patients independently</li>
+                            <li>MediMike AI does NOT prescribe medication or recommend treatment</li>
+                            <li>Users should always consult qualified healthcare professionals for medical decisions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div id="aiAnalysisModal" class="modal" style="display: none;">
+        <div class="modal-backdrop" id="modalBackdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="badge badge-ai"><i class="fas fa-brain"></i> MediMike AI Analysis</span>
+                    <h3 id="modalReportTitle">Report Analysis</h3>
+                    <p id="modalReportMeta" class="modal-meta"></p>
+                </div>
+                <div class="modal-header-actions">
+                    <button id="modalDownloadPdfBtn" class="btn btn-primary btn-sm" onclick="downloadCurrentAnalysisPDF()" title="Download or print clinical report as PDF">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button id="modalDownloadJsonBtn" class="btn btn-secondary btn-sm" onclick="exportCurrentAnalysisJSON()" title="Export structured analytics data as JSON">
+                        <i class="fas fa-download"></i> Export JSON
+                    </button>
+                    <a id="modalViewOriginalBtn" href="#" target="_blank" class="btn btn-secondary btn-sm" title="Open original file">
+                        <i class="fas fa-external-link-alt"></i> View Original
+                    </a>
+                    <button class="modal-close" id="modalCloseBtn" aria-label="Close modal">&times;</button>
+                </div>
+            </div>
+
+            <div class="modal-body" id="modalBody">
+                <div class="modal-loading" id="modalLoading">
+                    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
+                    <p>Fetching AI medical analysis...</p>
+                </div>
+
+                <div class="modal-content-details" id="modalContentDetails" style="display: none;">
+                    <!-- AI Summary Card -->
+                    <div class="analysis-card summary-card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-file-alt"></i> Plain-English Summary</h4>
+                            <span class="risk-badge" id="modalRiskBadge">Low Risk</span>
+                        </div>
+                        <p id="modalAiSummary" class="summary-text"></p>
+                        <div class="disclaimer-mini">
+                            <i class="fas fa-shield-alt"></i> <strong>Informational Aid:</strong> This summary was generated by MediMike AI to assist clinical record comprehension and does not replace medical consultation.
+                        </div>
+                    </div>
+
+                    <!-- Key Findings & Abnormalities Grid -->
+                    <div class="analysis-grid-2">
+                        <!-- Key Findings -->
+                        <div class="analysis-card">
+                            <h4><i class="fas fa-clipboard-check"></i> Key Findings</h4>
+                            <ul id="modalKeyFindings" class="findings-list"></ul>
+                        </div>
+
+                        <!-- Abnormal Findings -->
+                        <div class="analysis-card abnormal-card">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Abnormal / Flagged Findings</h4>
+                            <div id="modalAbnormalFindings" class="abnormal-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Metrics / Lab Values Table -->
+                    <div class="analysis-card">
+                        <h4><i class="fas fa-vials"></i> Vitals & Lab Test Metrics</h4>
+                        <div class="table-responsive">
+                            <table class="metrics-table" id="modalMetricsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Test / Metric</th>
+                                        <th>Observed Value</th>
+                                        <th>Reference Range</th>
+                                        <th>Status Flag</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modalMetricsTbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Diagnoses & Medications Grid -->
+                    <div class="analysis-grid-2">
+                        <!-- Diagnoses -->
+                        <div class="analysis-card">
+                            <h4><i class="fas fa-stethoscope"></i> Diagnoses / Identified Conditions</h4>
+                            <ul id="modalDiagnoses" class="tags-list"></ul>
+                        </div>
+
+                        <!-- Medications -->
+                        <div class="analysis-card">
+                            <h4><i class="fas fa-pills"></i> Medications Mentioned</h4>
+                            <div id="modalMedications" class="medications-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Recommendations -->
+                    <div class="analysis-card recommendations-card">
+                        <h4><i class="fas fa-user-md"></i> Recommendations & Next Steps</h4>
+                        <ul id="modalRecommendations" class="recommendations-list"></ul>
+                    </div>
+
+                    <!-- Extracted Text Accordion -->
+                    <div class="analysis-card collapsible-card">
+                        <details>
+                            <summary><i class="fas fa-file-code"></i> View Raw Extracted OCR / PDF Text</summary>
+                            <pre id="modalRawText" class="raw-text-viewer"></pre>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2024 MediMike. Medical Safety Disclaimer: This application is for information processing only and does not replace professional medical advice.</p>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>
