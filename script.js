@@ -19,11 +19,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // AI Analysis Modal
     initModal();
     
+    // Check backend connectivity
+    checkBackendConnectivity();
+
     // Load initial data
     loadDashboardData();
     loadPatients();
     loadReports();
 });
+
+// Check backend connectivity and show banner if offline/unreachable
+async function checkBackendConnectivity() {
+    try {
+        const res = await fetch('/api/patients');
+        if (!res.ok) {
+            showBackendWarning(res.status === 404 ? 'Backend API not found (404)' : `Backend server error (${res.status})`);
+        }
+    } catch (e) {
+        showBackendWarning('Cannot reach backend server');
+    }
+}
+
+function showBackendWarning(reason) {
+    if (document.getElementById('backendWarningBanner')) return;
+    
+    const banner = document.createElement('div');
+    banner.id = 'backendWarningBanner';
+    banner.style.cssText = `
+        background: linear-gradient(90deg, #742a2a, #9b2c2c);
+        color: #fff;
+        padding: 12px 20px;
+        text-align: center;
+        font-size: 0.92rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        border-bottom: 2px solid #e53e3e;
+        position: sticky;
+        top: 0;
+        z-index: 2000;
+        line-height: 1.5;
+    `;
+    
+    const isVercel = window.location.hostname.includes('vercel.app');
+    let message = `<strong><i class="fas fa-exclamation-triangle"></i> Backend Disconnected (${reason}):</strong> `;
+    if (isVercel) {
+        message += `You are viewing the frontend on Vercel, but the Node.js/SQLite backend is not running on Vercel. To create patients, upload reports, and use AI features, start the server locally by running <code>npm start</code> in your terminal and open <a href="http://localhost:3000" style="color:#fbd38d;font-weight:bold;text-decoration:underline;">http://localhost:3000</a>.`;
+    } else {
+        message += `The backend server appears offline. Make sure you run <code>npm start</code> in your terminal and open <a href="http://localhost:3000" style="color:#fbd38d;font-weight:bold;text-decoration:underline;">http://localhost:3000</a>.`;
+    }
+    
+    banner.innerHTML = message;
+    document.body.insertBefore(banner, document.body.firstChild);
+}
 
 // Navigation functionality
 function initNavigation() {
@@ -140,7 +186,12 @@ async function initPatientForm() {
                     body: JSON.stringify(patientData)
                 });
                 
-                const result = await response.json();
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (jsonErr) {
+                    result = null;
+                }
                 
                 if (response.ok) {
                     alert('Patient created successfully!');
@@ -148,11 +199,19 @@ async function initPatientForm() {
                     loadPatients(); // Reload patients list
                     loadDashboardData(); // Update dashboard
                 } else {
-                    alert('Error: ' + result.error);
+                    let errMsg = result && result.error ? result.error : null;
+                    if (!errMsg) {
+                        if (response.status === 404) {
+                            errMsg = 'Backend API endpoint not found (404). If you are viewing on Vercel, the backend server is not running there. Run "npm start" locally and open http://localhost:3000';
+                        } else {
+                            errMsg = `Server error (${response.status})`;
+                        }
+                    }
+                    alert('Error: ' + errMsg);
                 }
             } catch (error) {
                 console.error('Error creating patient:', error);
-                alert('Failed to create patient. Please try again.');
+                alert('Failed to connect to backend server.\n\nMake sure the local server is running by executing "npm start" in your terminal, then open http://localhost:3000');
             }
         });
     }
@@ -225,13 +284,18 @@ async function initReportForm() {
                 
                 console.log('Upload response status:', response.status);
                 
-                const result = await response.json();
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    result = null;
+                }
                 console.log('Upload response:', result);
                 
                 uploadStatus.style.display = 'none';
                 uploadBtn.disabled = false;
                 
-                if (response.ok) {
+                if (response.ok && result) {
                     showToast('Report uploaded successfully! MediMike AI is now analyzing...', 'success');
                     reportForm.reset();
                     document.getElementById('fileDetails').style.display = 'none';
@@ -244,7 +308,8 @@ async function initReportForm() {
                         processReportWithAi(result.reportId);
                     }
                 } else {
-                    showToast('Upload error: ' + result.error, 'error');
+                    const errMsg = (result && result.error) ? result.error : (response.status === 404 ? 'Backend API not found (404). Ensure backend is running locally at http://localhost:3000' : `Upload failed (${response.status})`);
+                    showToast('Upload error: ' + errMsg, 'error');
                 }
             } catch (error) {
                 console.error('Error uploading report:', error);
